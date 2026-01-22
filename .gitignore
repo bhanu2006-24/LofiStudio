@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+.venv/
+env/
+
+# Generated Content
+*.wav
+*.mp3
+*.mp4
+*.jpg
+*.png
+output_video.mp4
+generated_track.wav
+background_image.jpg
+
+# OS
+.DS_Store
+Thumbs.db
