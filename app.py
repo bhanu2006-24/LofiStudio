@@ -1,8 +1,11 @@
 import streamlit as st
 import os
 import time
+import random
 from audio_generator import generate_lofi_track
 from utils import fetch_image, create_video, convert_wav_to_mp3
+from constants import MUSIC_TYPES, PROMPTS, STYLE_MODIFIERS
+
 
 # Page configuration
 st.set_page_config(
@@ -65,17 +68,14 @@ def generate_content(track_length, music_type):
     
     # 2. Fetch Image
     status_text.text("🎨 Painting the scene...")
-    prompt_map = {
-        "Lo-Fi Beats": "lofi anime study girl room night cozy window rain",
-        "Piano": "melancholic fantasy landscape river sunset",
-        "Ambient": "space nebula cosmic ethereal abstract",
-        "Synth": "cyberpunk city neon rain night futuristic"
-    }
-    image_prompt = prompt_map.get(music_type, "lofi cozy aesthetics")
+    
+    # Select random base prompt and add style modifiers
+    base_prompt = random.choice(PROMPTS.get(music_type, ["lofi cozy aesthetic"]))
+    final_prompt = f"{base_prompt}, {random.choice(STYLE_MODIFIERS)}"
     
     try:
         img_path = "assets/generated/background_image.jpg"
-        image_file = fetch_image(image_prompt, output_filename=img_path)
+        image_file = fetch_image(final_prompt, output_filename=img_path)
         st.session_state.image_path = image_file
     except Exception as e:
         status_text.text(f"Error fetching image: {e}")
@@ -122,7 +122,7 @@ def main():
         
         music_type = st.selectbox(
             "Select Vibe",
-            ["Lo-Fi Beats", "Piano", "Ambient", "Synth"],
+            MUSIC_TYPES,
             index=0
         )
         
@@ -153,7 +153,7 @@ def main():
         
         # Show Visuals
         if st.session_state.get('image_path') and os.path.exists(st.session_state.image_path):
-            st.image(st.session_state.image_path, caption=f"Vibe: {music_type}", use_column_width=True)
+            st.image(st.session_state.image_path, caption=f"Vibe: {music_type}", use_container_width=True)
         
         # Audio Player
         if st.session_state.get('audio_path') and os.path.exists(st.session_state.audio_path):
