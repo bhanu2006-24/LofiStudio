@@ -8,15 +8,16 @@ venv/
 .venv/
 env/
 
-# Generated Content
+# Generated Content in root (legacy)
 *.wav
 *.mp3
 *.mp4
 *.jpg
 *.png
-output_video.mp4
-generated_track.wav
-background_image.jpg
+
+# Generated Assets
+assets/generated/
+!assets/generated/.gitkeep
 
 # OS
 .DS_Store
