@@ -29,3 +29,12 @@ def create_video(audio_path, image_path, output_path="output_video.mp4"):
     except Exception as e:
         print(f"Error creating video: {e}")
         return None
+
+def convert_wav_to_mp3(wav_path, output_path="output_audio.mp3"):
+    try:
+        audio = AudioFileClip(wav_path)
+        audio.write_audiofile(output_path, codec='mp3')
+        return output_path
+    except Exception as e:
+        print(f"Error converting audio: {e}")
+        return None
