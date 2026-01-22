@@ -114,14 +114,20 @@ def generate_content():
     # 3. Render Video
     status_text.text("🎬 Rendering video final cut...")
     try:
-        if not st.session_state.audio_path or not st.session_state.image_path:
-             raise ValueError("Missing audio or image input")
+        if not st.session_state.get('audio_path'):
+             st.error("Audio generation failed: No audio path in session.")
+             return
+        if not st.session_state.get('image_path'):
+             st.error("Image fetch failed: No image path in session.")
+             return
         
         video_file = create_video(st.session_state.audio_path, st.session_state.image_path, "lofi_studio_output.mp4")
         st.session_state.video_path = video_file
     except Exception as e:
         status_text.text(f"Error rendering video: {e}")
         st.error(f"Error rendering video: {e}")
+        import traceback
+        st.code(traceback.format_exc())
         return
     progress_bar.progress(100)
     
