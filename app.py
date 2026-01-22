@@ -4,7 +4,76 @@ import time
 from audio_generator import generate_lofi_track
 from utils import fetch_image, create_video, convert_wav_to_mp3
 
-# ... (omitted shared code)
+# Page configuration
+st.set_page_config(
+    page_title="LoFi Studio",
+    page_icon="🎧",
+    layout="centered"
+)
+
+# Custom CSS for aesthetics
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    .stButton>button {
+        background-color: #ff4b4b;
+        color: white;
+        border-radius: 20px;
+        font-weight: bold;
+        padding: 0.5rem 2rem;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #ff6b6b;
+    }
+    h1 {
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 700;
+        background: -webkit-linear-gradient(45deg, #ff4b4b, #ff9068);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .stSelectbox, .stSlider {
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# App Title and Description
+st.title("🎧 LoFi Studio")
+st.markdown("### Generate Your Own Chill Tracks")
+st.markdown("Create custom lo-fi music with visuals in seconds. Select your vibe, set the duration, and let the AI do the rest.")
+
+# Sidebar Controls
+with st.sidebar:
+    st.header("Studio Controls")
+    
+    music_type = st.selectbox(
+        "Select Vibe",
+        ["Lo-Fi Beats", "Piano", "Ambient", "Synth"],
+        index=0
+    )
+    
+    track_length = st.slider(
+        "Track Length (seconds)",
+        min_value=30,
+        max_value=600, # 10 minutes
+        value=60,
+        step=10
+    )
+
+    st.markdown("---")
+    st.markdown("Powered by **LoFi Studio Engine**")
+
+# Main Content Area
+col1, col2 = st.columns([1, 2])
+
+# Placeholder for content
+if 'generated' not in st.session_state:
+    st.session_state.generated = False
 
 def generate_content():
     progress_bar = st.progress(0)
@@ -18,14 +87,63 @@ def generate_content():
         mp3_file = convert_wav_to_mp3(wav_file, "generated_song.mp3")
         st.session_state.audio_path = mp3_file
     except Exception as e:
+        status_text.text(f"Error generating audio: {e}")
         st.error(f"Error generating audio: {e}")
         return
     progress_bar.progress(30)
     
-    # ... (rest of the function)
+    # 2. Fetch Image
+    status_text.text("🎨 Painting the scene...")
+    prompt_map = {
+        "Lo-Fi Beats": "lofi anime study girl room night cozy window rain",
+        "Piano": "melancholic fantasy landscape river sunset",
+        "Ambient": "space nebula cosmic ethereal abstract",
+        "Synth": "cyberpunk city neon rain night futuristic"
+    }
+    image_prompt = prompt_map.get(music_type, "lofi cozy aesthetics")
+    
+    try:
+        image_file = fetch_image(image_prompt)
+        st.session_state.image_path = image_file
+    except Exception as e:
+        status_text.text(f"Error fetching image: {e}")
+        st.error(f"Error fetching image: {e}")
+        return
+    progress_bar.progress(60)
+    
+    # 3. Render Video
+    status_text.text("🎬 Rendering video final cut...")
+    try:
+        if not st.session_state.audio_path or not st.session_state.image_path:
+             raise ValueError("Missing audio or image input")
+        
+        video_file = create_video(st.session_state.audio_path, st.session_state.image_path, "lofi_studio_output.mp4")
+        st.session_state.video_path = video_file
+    except Exception as e:
+        status_text.text(f"Error rendering video: {e}")
+        st.error(f"Error rendering video: {e}")
+        return
+    progress_bar.progress(100)
+    
+    status_text.text("✨ Creation Complete!")
+    st.session_state.generated = True
+    time.sleep(1)
+    status_text.empty()
+    progress_bar.empty()
 
-# ...
+# Generate Button
+if st.button("Generate Track", use_container_width=True):
+    with st.spinner("Entering the studio..."):
+        generate_content()
 
+# Display Results
+if st.session_state.generated:
+    st.markdown("---")
+    
+    # Show Visuals
+    if os.path.exists(st.session_state.image_path):
+        st.image(st.session_state.image_path, caption=f"Vibe: {music_type}", use_column_width=True)
+    
     # Audio Player
     if os.path.exists(st.session_state.audio_path):
         st.markdown("#### 🎧 Preview Audio")
